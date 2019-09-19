@@ -192,6 +192,7 @@ def compute_down(expr,
                  profiler_output=None,
                  compute_kwargs=None,
                  odo_kwargs=None,
+                 compute_hook_kwargs=None,
                  **kwargs):
     """Compute down for blaze clients.
 
@@ -227,6 +228,7 @@ def compute_down(expr,
         kwargs[u'profile'] = True
         kwargs[u'profiler_output'] = ':response'
 
+    kwargs[u'compute_hook_kwargs'] = keymap(u8, compute_hook_kwargs or {})
     kwargs[u'compute_kwargs'] = keymap(u8, compute_kwargs or {})
     kwargs[u'odo_kwargs'] = keymap(u8, odo_kwargs or {})
 

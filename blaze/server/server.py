@@ -673,7 +673,7 @@ def compserver(payload, serial):
         compute_hook = getattr(
             flask.current_app, 'compute_hook', _default_compute_hook
         )
-        compute_hook_kwargs = payload.get('compute_hook_kwargs', {})
+        compute_hook_kwargs = payload.get(u'compute_hook_kwargs', {})
         expr, status, error_msg = compute_hook(expr, compute_hook_kwargs)
         if status != RC.OK:
             error_msg = "Pre-processing failed with:\n%s" % error_msg
