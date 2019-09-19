@@ -217,6 +217,8 @@ def compute_down(expr,
         A file like object to hold the profiling output from the server.
         If this is not passed then the server will write the data to the
         server's filesystem
+    compute_hook_kwargs : dict, optional
+        Extra kwargs to pass to compute_hook on the server.
     """
     from .server import to_tree
 
