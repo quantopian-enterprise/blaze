@@ -192,6 +192,7 @@ def compute_down(expr,
                  profiler_output=None,
                  compute_kwargs=None,
                  odo_kwargs=None,
+                 compute_hook_kwargs=None,
                  **kwargs):
     """Compute down for blaze clients.
 
@@ -216,6 +217,8 @@ def compute_down(expr,
         A file like object to hold the profiling output from the server.
         If this is not passed then the server will write the data to the
         server's filesystem
+    compute_hook_kwargs : dict, optional
+        Extra kwargs to pass to compute_hook on the server.
     """
     from .server import to_tree
 
@@ -227,6 +230,7 @@ def compute_down(expr,
         kwargs[u'profile'] = True
         kwargs[u'profiler_output'] = ':response'
 
+    kwargs[u'compute_hook_kwargs'] = keymap(u8, compute_hook_kwargs or {})
     kwargs[u'compute_kwargs'] = keymap(u8, compute_kwargs or {})
     kwargs[u'odo_kwargs'] = keymap(u8, odo_kwargs or {})
 
