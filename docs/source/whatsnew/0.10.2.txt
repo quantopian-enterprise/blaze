@@ -1,0 +1,72 @@
+Release 0.10.2
+-----------------
+
+:Release: 0.10.2
+
+New Expressions
+^^^^^^^^^^^^^^^
+
+None
+
+Improved Expressions
+^^^^^^^^^^^^^^^^^^^^
+
+* Adds support for ``any`` and ``all`` to the sql backend (:issue:`1511`).
+
+New Backends
+^^^^^^^^^^^^
+
+None
+
+Improved Backends
+^^^^^^^^^^^^^^^^^
+
+* To allow access to the ``map`` and ``apply`` expressions in client / server
+  interactions when in a trusted environment, new ``_trusted`` versions of the
+  several default ``SerializationFormat`` instances were added.  These trusted
+  variants allow (de)serialization of builtin functions, NumPy functions, and
+  Pandas functions.  They are intentially kept separate from the default
+  versions to ensure they are not accidentally enabled in untrusted
+  environments (:issue:`1497` :issue:`1504`).
+
+Experimental Features
+^^^^^^^^^^^^^^^^^^^^^
+
+None
+
+API Changes
+^^^^^^^^^^^
+
+None
+
+Bug Fixes
+^^^^^^^^^
+
+* Fixed a bug with ``to_tree()`` and ``slice`` objects. Have to change the
+  order of cases in ``to_tree()`` to ensure ``slice`` objects are handled
+  before lookups inside the ``names`` namespace (:issue:`1516`).
+* Perform more input validation for ``sort()`` expression arguments
+  (:issue:`1517`).
+* Fixes issue with string and datetime coercions on Pandas objects
+  (:issue:`1519` :issue:`1524`).
+* Fixed a bug with ``isin`` and ``Selection``\s on sql selectables
+  (:issue:`1528`).
+
+Miscellaneous
+^^^^^^^^^^^^^
+
+Expression Identity Rework
+""""""""""""""""""""""""""
+
+Expression are now memoized by their inputs. This means that two identical
+expressions will always be the same object, or that ``a.isidentical(b)`` is the
+same as ``a is b``. ``isidentical`` is called hundreds of thousands of times in
+a normal blaze workload. Moving more work to expression construction time has
+been shown to dramatically improve compute times when the expressions grow in
+complexity or size. In the past, blaze was spending linear time relative to the
+expression size to compare expressions because it needed to recurse through the
+entire expression tree but now it can do ``isidentical`` in constant time.
+
+Users should still use ``a.isidentical(b)`` instead of ``a is b`` because we
+reserve the right to add more arguments or change the implementation of
+``isidentical`` in the future.

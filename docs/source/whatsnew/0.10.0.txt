@@ -1,0 +1,137 @@
+Release 0.10.0
+--------------
+
+:Release: 0.10.0
+:Date: TBD
+
+New Expressions
+^^^^^^^^^^^^^^^
+
+* The ``sample`` expression allows random sampling of rows to facilitate
+  interactive data exploration (:issue:`1410`).  It is implemented for the
+  Pandas, Dask, SQL, and Python backends.
+* Adds :func:`~blaze.expr.expressions.coalesce` expression which takes two
+  arguments and returns the first non missing value. If both are missing then
+  the result is missing. For example: ``coalesce(1, 2) == 1``,
+  ``coalesce(None, 1)`` == 1, and ``coalesce(None, None) == None``.
+  This is inspired by the sql function of the same name (:issue:`1409`).
+* Adds :func:`~blaze.expr.expressions.cast` expression to reinterpret an
+  expression's dshape. This is based on C++ ``reinterpret_cast``, or just normal
+  C casts. For example:
+  ``symbol('s', 'int32').cast('uint32').dshape == dshape('uint32')``. This
+  expression has no affect on the computation, it merely tells blaze to treat
+  the result of the expression as the new dshape. The compute definition for
+  ``cast`` is simply:
+
+  .. code-block:: python
+
+     @dispatch(Cast, object)
+     def compute_up(expr, data, **kwargs):
+         return data
+
+  (:issue:`1409`).
+
+Improved Expressions
+^^^^^^^^^^^^^^^^^^^^
+
+* The test suite was expanded to validate proper expression input error handling
+  (:issue:`1420`).
+* The :func:`~blaze.expr.datetime.truncate` function was refactored to raise an
+  exception for incorrect inputs, rather than using assertions (:issue:`1443`).
+* The docstring for :class:`~blaze.expr.collections.Merge` was expanded to
+  include examples using :class:`~blaze.expr.expressions.Label` to control the
+  ordering of the columns in the result (:issue:`1447`).
+
+New Backends
+^^^^^^^^^^^^
+
+None
+
+Improved Backends
+^^^^^^^^^^^^^^^^^
+
+* Adds :class:`~blaze.expr.math.greatest` and :class:`~blaze.expr.math.least`
+  support to the sql backend (:issue:`1428`).
+* Generalize ``Field`` to support :class:`collections.Mapping` object
+  (:issue:`1467`).
+
+Experimental Features
+^^^^^^^^^^^^^^^^^^^^^
+
+* The :class:`~blaze.expr.strings.str_upper` and
+  :class:`~blaze.expr.strings.str_lower` expressions were added for the Pandas
+  and SQL backends (:issue:`1462`).  These are marked experimental since their
+  names are subject to change.  More string methods will be added in coming
+  versions.
+
+API Changes
+^^^^^^^^^^^
+
+* The :class:`~blaze.expr.strings.strlen` expression was deprecated in favor of
+  :class:`~blaze.expr.strings.str_len` (:issue:`1462`).
+* Long deprecated :func:`~blaze.table.Table` and
+  :func:`~blaze.table.TableSymbol` were removed (:issue:`1441`).  The
+  ``TableSymbol`` tests in ``test_table.py`` were migrated to
+  ``test_symbol.py``.
+* :func:`~blaze.interactive.Data` has been deprecated in favor of
+  :func:`~blaze.interactive.data`.  :class:`~blaze.interactive.InteractiveSymbol`
+  has been deprecated and temporarily replaced by
+  :class:`~blaze.interactive._Data`.  These deprecations will be in place for
+  the 0.10 release.  In the 0.11 release, :class:`~blaze.interactive._Data`
+  will be renamed to ``Data``, calls to :func:`~blaze.interactive.data` will
+  create ``Data`` instances, and :class:`~blaze.interactive.InteractiveSymbol`
+  will be removed (:issue:`1431` and :issue:`1421`).
+* :func:`~blaze.compute.core.compute` has a new keyword argument
+  ``return_type`` which defaults to ``'native'`` (:issue:`1401`, :issue:`1411`,
+  :issue:`1417`), which preserves existing behavior.  In the 0.11 release,
+  ``return_type`` will be changed to default to ``'core'``, which will
+  ``odo`` non-core backends into core backends as the final step in a call to
+  ``compute``.
+* Due to API instability and on the recommendation of DyND developers, we
+  removed the DyND dependency temporarily (:issue:`1379`).  When DyND achieves
+  its 1.0 release, DyND will be re-incorporated into Blaze.  The existing DyND
+  support in Blaze was rudimentary and based on an egregiously outdated and
+  buggy version of DyND.  We are aware of no actual use of DyND via Blaze in
+  practice.
+* The :class:`~blaze.expr.expressions.Expr` ``__repr__`` method's triggering of
+  implicit computation has been deprecated.  Using this aspect of Blaze will
+  trigger a ``DeprecationWarning`` in version 0.10, and this behavior will be
+  replaced by a standard (boring) ``__repr__`` implementation in version 0.11.
+  Users can explicitly trigger a computation to see a quick view of the results
+  of an interactive expression by means of the
+  :func:`~blaze.expr.expressions.Expr.peek` method.  By setting the
+  :mod:`~blaze.interactive.use_new_repr` flag to ``True``, users can use the
+  new (boring) ``__repr__`` implementation in version 0.10 (:issue:`1414`
+  and :issue:`1395`).
+
+
+Bug Fixes
+^^^^^^^^^
+
+* The :class:`~blaze.expr.strings.str_upper` and
+  :class:`~blaze.expr.strings.str_lower` schemas were fixed to pass through
+  their underlying ``_child``'s schema to ensure option types are handled
+  correctly (:issue:`1472`).
+* Fixed a bug with Pandas' implementation of ``compute_up`` on
+  :class:`~blaze.expr.broadcast.Broadcast` expressions (:issue:`1442`).  Added
+  tests for Pandas frame and series and dask dataframes on ``Broadcast``
+  expressions.
+* Fixed a bug with :class:`~blaze.expr.collections.Sample` on SQL backends
+  (:issue:`1452` :issue:`1423` :issue:`1424` :issue:`1425`).
+* Fixed several bugs relating to adding new datasets to blaze server instances
+  (:issue:`1459`).  Blaze server will make a best effort to ensure that the
+  added dataset is valid and loadable; if not, it will return appropriate HTTP
+  status codes.
+
+
+Miscellaneous
+^^^^^^^^^^^^^
+
+* Adds logging to server compute endpoint.  Includes expression being computed
+  and total time to compute. (:issue:`1436`)
+* Merged the ``core`` and ``all`` conda recipes (:issue:`1451`).  This
+  simplifies the build process and makes it consistent with the single
+  ``blaze`` package provided by the Anaconda distribution.
+* Adds a ``--yaml-dir`` option to ``blaze-server`` to indicate the server
+  should load path-based ``yaml`` resources relative to the yaml file's
+  directory, not the CWD of the process (:issue:`1460`).
